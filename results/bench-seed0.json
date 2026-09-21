@@ -1,0 +1,62 @@
+{
+  "config": {
+    "seed": 0,
+    "epochs": 40,
+    "train_n": 3000,
+    "val_n": 800,
+    "student_scale": 0.3,
+    "teacher_scale": 2.0,
+    "temperature": 1.0,
+    "alpha": 0.5
+  },
+  "teacher": {
+    "accuracy": 0.75875,
+    "per_family": {
+      "color": 0.7662721893491125,
+      "count": 0.9940828402366864,
+      "shape": 0.5976331360946746,
+      "spatial": 0.6370967741935484
+    },
+    "ece": 0.04997413694858551,
+    "params": 69340,
+    "ms": 9.837242000503466
+  },
+  "student_ce": {
+    "accuracy": 0.635,
+    "per_family": {
+      "color": 0.6686390532544378,
+      "count": 0.6627218934911243,
+      "shape": 0.5502958579881657,
+      "spatial": 0.6209677419354839
+    },
+    "ece": 0.06419906437397004,
+    "params": 1939,
+    "ms": 3.0122920009307563
+  },
+  "student_kd": {
+    "accuracy": 0.65125,
+    "per_family": {
+      "color": 0.6952662721893491,
+      "count": 0.7100591715976331,
+      "shape": 0.514792899408284,
+      "spatial": 0.6370967741935484
+    },
+    "ece": 0.04304943457245827,
+    "params": 1939,
+    "ms": 3.0587979999836534
+  },
+  "distill_diagnostics": {
+    "topk_agreement": 0.76,
+    "argmax_agreement": 0.7524999976158142,
+    "both_correct": 0.5887500047683716
+  },
+  "quantization": {
+    "fp32_accuracy": 0.65125,
+    "int8_accuracy": 0.64875,
+    "fp32_mb": 0.012668,
+    "int8_mb": 0.011492,
+    "compression": 1.1023320570831883,
+    "fp32_ms": 4.364721999736503,
+    "int8_ms": 4.868341999826953
+  }
+}
