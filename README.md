@@ -6,6 +6,8 @@
 
 Every number in this README is produced by `vdb bench` on a laptop CPU and is byte-reproducible from the committed seeds. Nothing is copied from papers.
 
+![ci](https://github.com/Lesereingrape/vlm-distill-bench/actions/workflows/ci.yml/badge.svg)
+
 ## Headline results (3 seeds, mean ± std)
 
 `vdb bench` (defaults = tuned config; `results/bench-seed{0,1,2}.json` are committed):
