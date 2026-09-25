@@ -1,0 +1,71 @@
+{
+  "config": {
+    "seed": 0,
+    "epochs": 40,
+    "train_n": 3000,
+    "val_n": 800,
+    "student_scale": 0.3,
+    "teacher_scale": 2.0,
+    "temperature": 4.0,
+    "alpha": 0.9
+  },
+  "teacher": {
+    "accuracy": 0.75875,
+    "per_family": {
+      "color": 0.7662721893491125,
+      "count": 0.9940828402366864,
+      "shape": 0.5976331360946746,
+      "spatial": 0.6370967741935484
+    },
+    "ece": 0.04997413694858551,
+    "params": 69340,
+    "ms": 6.013961999997264
+  },
+  "student_ce": {
+    "accuracy": 0.635,
+    "per_family": {
+      "color": 0.6686390532544378,
+      "count": 0.6627218934911243,
+      "shape": 0.5502958579881657,
+      "spatial": 0.6209677419354839
+    },
+    "ece": 0.06419906437397004,
+    "params": 1939,
+    "ms": 1.180935999873327
+  },
+  "student_kd": {
+    "accuracy": 0.565,
+    "per_family": {
+      "color": 0.6153846153846154,
+      "count": 0.5088757396449705,
+      "shape": 0.4911242603550296,
+      "spatial": 0.6048387096774194
+    },
+    "ece": 0.17248081974685192,
+    "params": 1939,
+    "ms": 1.08758599992143
+  },
+  "distill_diagnostics": {
+    "topk_agreement": 0.7795833333333333,
+    "argmax_agreement": 0.5699999928474426,
+    "both_correct": 0.4625000059604645
+  },
+  "quantization": {
+    "fp32_accuracy": 0.565,
+    "int8_accuracy": 0.5725,
+    "fp32_mb": 0.012668,
+    "int8_mb": 0.011492,
+    "compression": 1.1023320570831883,
+    "fp32_ms": 1.263838000013493,
+    "int8_ms": 1.7609720000473317
+  },
+  "environment": {
+    "python": "3.13.7",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "torch": "2.14.0+cpu",
+    "numpy": "2.5.3",
+    "threads": 8,
+    "device": "cpu"
+  },
+  "runtime_sec": 56.6
+}

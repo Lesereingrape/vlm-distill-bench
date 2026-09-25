@@ -52,29 +52,41 @@ table below and every number in the sentences under it are rendered from
 *Read it as one seed and summaries only. The cells share a teacher, a training set and a random stream, so they are paired, but this artifact stores accuracies rather than per-example outcomes, so no cell-vs-cell paired test is possible from it; one held-out example is worth 0.12 points, and the KD student's spread across the 3 seeds of the headline table is ±0.059, i.e. 5.9 points against the 3.8-point widest alpha row here. Differences of a point or two between two cells are therefore not measurements of a mechanism. The monotone ECE trend and the collapse from T=3 are the parts that survive that standard.*
 <!-- SWEEP:END -->
 
-Reproduce it (one teacher plus 16 students on CPU):
+Reproduce it (18 trainings on CPU: one teacher, one CE baseline, 16 students):
 
 ```bash
 python experiments/run_temperature_sweep.py --write   # -> results/temperature-sweep.json
 python experiments/make_report.py --write             # re-render this section
 ```
 
-`vdb bench --temperature 4 --alpha 0.9` reproduces the worst corner of the grid, and
-`vdb bench --temperature 1 --alpha 0.5` the cell the headline table publishes.
+`vdb bench --temperature 4 --alpha 0.9` reproduces the worst corner of the grid: of the 16
+swept cells that one is both the least accurate (0.565) and the least calibrated (0.172).
+`vdb bench --temperature 1 --alpha 0.5` reproduces the cell the headline table publishes.
+Neither sentence is a prediction — the first command ran, with
+`--out results/bench-corner.json`, and that file is what it printed. So
+`tests/test_readme_corner_recipe.py` compares the corner against the swept cell digit for
+digit instead of asking a reader to retrain to check a paragraph. The second command is the
+default config, which is exactly why the corner needs its own artifact: no published number
+would move if `--temperature` stopped reaching the loss, so that test also spies on the CLI
+and asserts that it does.
 
 ## Quickstart
 
 ```bash
 pip install -e .           # torch + numpy, that's it
-vdb bench --out /tmp/run.json               # ~60s on CPU, seed 0, results/ untouched
-vdb bench --seed 1 --out /tmp/seed1.json    # the next seed of the same table
+vdb bench --out check-seed0.json            # ~60s on CPU, seed 0, results/ untouched
+vdb bench --seed 1 --out check-seed1.json   # the next seed of the same table
 vdb synth --n 10           # inspect the procedural dataset
 python experiments/make_report.py --write   # re-render the README block from results/
 ```
 
 `vdb bench` without `--out` writes `results/bench-seed0.json`, i.e. it replaces a
 published artifact: the accuracies come back identical, the latency columns do not, so
-re-render the README afterwards if you mean it.
+re-render the README afterwards if you mean it. The two check runs above write relative
+files rather than a `/tmp/...` path on purpose: Git-Bash rewrites that argument before the
+CLI sees it, while cmd and PowerShell pass it through, and there
+`Path("/tmp/check.json").parent` is `<drive>:\tmp` — a folder the command would first have
+to create at the drive root.
 
 ## How it works
 
@@ -105,7 +117,7 @@ print(evaluate(student, val))
 
 ## Reproducing
 
-Four things tie this README to the code, and CI runs all four:
+Five things tie this README to the code, and CI runs all five:
 
 1. `tests/test_readme_matches_results.py` compares **both** measured blocks byte for byte
    with `experiments/make_report.py` run against the committed `results/*.json` - the
@@ -119,31 +131,38 @@ Four things tie this README to the code, and CI runs all four:
    the `~60s` wall-clock budget, the `3 seeds` in the heading, the `15-bin` ECE, the
    `3×32×32` image, the temperature and alpha lists the sweep paragraph recites, and the
    CI Python range — against the recorded artifacts and `src/`.
-3. Each artifact carries the `environment` it was measured under (Python, torch, numpy,
+3. `tests/test_readme_corner_recipe.py` covers the one claim no artifact can make on its
+   own: that `vdb bench --temperature 4 --alpha 0.9` lands on the grid's worst corner. The
+   committed `results/bench-corner.json` is the output of exactly that command, so the test
+   compares it with the swept cell digit for digit, checks that corner really is both the
+   least accurate and the least calibrated of the 16 cells, and spies on the CLI to confirm
+   the two flags reach `KDLoss` — the failure every published number would survive, since
+   they all sit at the default temperature.
+4. Each artifact carries the `environment` it was measured under (Python, torch, numpy,
    CPU thread count) next to a `runtime_sec`. Averaging logits over a batch is a float
    reduction whose order depends on the thread count and the build, so reproducibility is
    stated as a property of that environment, not promised about your laptop.
-4. `vdb bench` derives every random stream from one integer (`torch.manual_seed` plus
+5. `vdb bench` derives every random stream from one integer (`torch.manual_seed` plus
    `numpy.random.default_rng` for the scene generator) and writes the config it used into
    the artifact, so `--seed N` extends the published table instead of starting an
    experiment that cannot be lined up with the old one.
 
 Those artifacts *are* a verification run: the published numbers were reproduced from
-scratch into a temporary directory and compared field by field against the run that
-produced the table in this file. 15 fields out of several hundred differed — exactly the
-five `*_ms` columns per seed, which time a wall clock and move with machine load — while
-every accuracy, ECE, per-family score and distillation diagnostic came back identical to
-the last decimal, across a newer Python and torch build than the original run used. That
-is the honest shape of "reproducible" here: the science is stable, the latency columns
-are not, and the table above is bolded by measured mean accuracy rather than by which row
-we find most interesting.
+scratch into throwaway files outside `results/`, and compared field by field against the
+run that produced the table in this file. 15 fields out of several hundred differed —
+exactly the five `*_ms` columns per seed, which time a wall clock and move with machine
+load — while every accuracy, ECE, per-family score and distillation diagnostic came back
+identical to the last decimal, across a newer Python and torch build than the original
+run used. That is the honest shape of "reproducible" here: the science is stable, the
+latency columns are not, and the table above is bolded by measured mean accuracy rather
+than by which row we find most interesting.
 
 CI (GitHub Actions) runs ruff over `src`, `tests` and `experiments`, then the full pytest
-matrix on Python 3.10–3.12 with CPU-only torch wheels — which is what makes the four
+matrix on Python 3.10–3.12 with CPU-only torch wheels — which is what makes the five
 guards above load-bearing rather than decorative.
 
 ```bash
-for n in 0 1 2; do vdb bench --seed $n --out /tmp/vlm-rerun-$n.json; done
+for n in 0 1 2; do vdb bench --seed $n --out check-seed$n.json; done
 python experiments/make_report.py            # print what the README must contain
 ```
 
