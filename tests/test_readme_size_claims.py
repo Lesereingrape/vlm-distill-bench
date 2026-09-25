@@ -24,6 +24,12 @@ def _docs() -> list[dict]:
     return [json.loads(p.read_text(encoding="utf-8")) for p in paths]
 
 
+def _sweep() -> dict:
+    path = ROOT / "results" / "temperature-sweep.json"
+    assert path.exists(), "no committed results/temperature-sweep.json to check against"
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 README_PATH = ROOT / "README.md"
 
 
@@ -70,6 +76,21 @@ def test_ece_bin_count_and_image_size_match_the_code():
     assert m, "README no longer states the synthetic image size"
     assert (int(m.group(1)), int(m.group(2))) == (IMG, IMG), (
         f"README says 3x{m.group(1)}x{m.group(2)}, synth builds {IMG}x{IMG}")
+
+
+def test_sweep_prose_describes_the_grid_that_was_actually_swept():
+    """The paragraph above the SWEEP block is hand-written, so pin it to the artifact."""
+    text, doc = _readme(), _sweep()
+    temps = ", ".join(f"{t:g}" for t in doc["config"]["temperatures"])
+    alphas = ", ".join(f"{a:g}" for a in doc["config"]["alphas"])
+    listed = [m.replace(" ", "") for m in re.findall(r"\u2208\s*\{([\d, .]+)\}", text)]
+    assert [temps.replace(" ", ""), alphas.replace(" ", "")] == listed[:2], (
+        f"README recites {listed[:2]} for the sweep, the artifact swept "
+        f"[{temps}] and [{alphas}]")
+    n = len(doc["cells"])
+    assert f"{n} students" in text, f"README counts {n} students somewhere else now"
+    rows, cols = {c["temperature"] for c in doc["cells"]}, {c["alpha"] for c in doc["cells"]}
+    assert len(rows) * len(cols) == n, "the grid is no longer a full cross"
 
 
 def test_ci_python_matrix_in_the_readme_matches_the_workflow():
