@@ -3,11 +3,17 @@
 `fit` trains a MiniVLM either with plain cross-entropy or against a frozen
 teacher via `KDLoss`; `evaluate` reports overall and per-family accuracy,
 expected calibration error, and CPU forward latency. All randomness flows
-through `seed`, so a config produces the same table on every machine.
+through `seed`, so a config produces the same table *inside the environment the
+artifact records*: averaging logits over a batch is a float reduction, and its
+order depends on the CPU thread count and the torch build. Outside that
+environment expect the same shape, not the same digits — `environment()` is why
+the README can say that instead of promising bit-exactness it cannot deliver.
 """
 
 from __future__ import annotations
 
+import platform
+import sys
 import time
 from dataclasses import dataclass, field
 
@@ -137,3 +143,15 @@ def distill_diagnostics(student: MiniVLM, teacher: MiniVLM,
     agree, both = argmax_match(s, t, y)
     return {"topk_agreement": topk_agreement(s, t), "argmax_agreement": agree,
             "both_correct": both}
+
+
+def environment() -> dict:
+    """The machine a `bench` artifact came off, recorded beside the numbers."""
+    return {
+        "python": sys.version.split()[0],
+        "platform": platform.platform(),
+        "torch": torch.__version__,
+        "numpy": np.__version__,
+        "threads": torch.get_num_threads(),
+        "device": "cpu",
+    }

@@ -40,6 +40,8 @@ def test_cli_bench_writes_results(tmp_path):
     for key in ("teacher", "student_ce", "student_kd", "quantization"):
         assert key in doc
     assert doc["quantization"]["int8_mb"] < doc["quantization"]["fp32_mb"]
+    assert doc["environment"]["device"] == "cpu" and doc["environment"]["threads"] >= 1
+    assert doc["runtime_sec"] > 0
 
 
 def test_cli_synth_runs(capsys):

@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from pathlib import Path
 
 from .model import ModelSpec
@@ -25,11 +26,12 @@ def cmd_synth(args: argparse.Namespace) -> int:
 
 
 def cmd_bench(args: argparse.Namespace) -> int:
-    from .bench import distill_diagnostics, evaluate, fit, measure_latency
+    from .bench import distill_diagnostics, environment, evaluate, fit, measure_latency
     from .kd import KDLoss
     from .quant import quant_report
     from .synth import split
 
+    started = time.perf_counter()
     train, val = split(args.train_n, args.val_n, seed=args.seed)
     epochs = args.epochs
 
@@ -63,6 +65,8 @@ def cmd_bench(args: argparse.Namespace) -> int:
         "student_kd": {**k_eval, "ms": measure_latency(kd_res.model)},
         "distill_diagnostics": diag,
         "quantization": q_report,
+        "environment": environment(),
+        "runtime_sec": round(time.perf_counter() - started, 1),
     }
     _print_table(doc)
     out = Path(args.out)
