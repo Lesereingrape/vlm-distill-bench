@@ -158,7 +158,7 @@ latency columns are not, and the table above is bolded by measured mean accuracy
 than by which row we find most interesting.
 
 CI (GitHub Actions) runs ruff over `src`, `tests` and `experiments`, then the full pytest
-matrix on Python 3.10–3.12 with CPU-only torch wheels — which is what makes the five
+matrix on Python 3.10–3.13 with CPU-only torch wheels — which is what makes the five
 guards above load-bearing rather than decorative.
 
 ```bash
